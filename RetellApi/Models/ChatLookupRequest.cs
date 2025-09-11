@@ -1,7 +1,7 @@
 ﻿
 namespace RetellApi.Models
 {
-    public class GetChatRequest
+    public class ChatLookupRequest
     {
         public string chat_id { get; set; }
     }

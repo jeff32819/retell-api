@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.2</Version>
+    <Version>1.0.4</Version>
     <PackageId>Jeff32819.RetellApi</PackageId>
     <UserSecretsId>37c95bab-8f56-4d4c-a52d-559c85b6a3a5</UserSecretsId>
   </PropertyGroup>

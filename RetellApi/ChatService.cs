@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Flurl.Http;
 using RetellApi.Models;
@@ -45,21 +46,26 @@ namespace RetellApi
                 .WithHeader("Authorization", $"Bearer {ApiKey}")
                 .WithHeader("Content-Type", "application/json");
         }
+
+        public static string ChatIdCleaned(string txt) => string.IsNullOrEmpty(txt)
+                                                            ? "" 
+                                                            : Regex.Replace(txt.Trim(), "(null|undefined)", "", RegexOptions.IgnoreCase);
+
         /// <summary>
         /// Does the chat exist? If not, clear the ChatId property.
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        private async Task<bool> ChatExists(string chatId)
+        private async Task<bool> Exists(string chatId)
         {
-            if (string.IsNullOrEmpty(chatId))
+            chatId = ChatIdCleaned(chatId);
+            if (chatId == "")
             {
                 return false;
             }
-
             try
             {
-                var result = await GetChatDetailById(chatId);
+                var result = await Lookup(chatId);
                 return true;
             }
             catch
@@ -71,7 +77,7 @@ namespace RetellApi
         /// Start chat with agent. If chatId is provided, will try to continue that chat. (good for testing)
         /// </summary>
         /// <returns></returns>
-        private async Task<string> ChatCreate()
+        private async Task<string> Create()
         {
             var payload = new CreateChatRequest
             {
@@ -98,17 +104,18 @@ namespace RetellApi
         /// </summary>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        private async Task<string> CreateChatIdIfBlank(string chatId) => string.IsNullOrEmpty(chatId) ? await ChatCreate() : chatId;
+        private async Task<string> CreateIfBlankChatId(string chatId) => string.IsNullOrEmpty(chatId) ? await Create() : chatId;
         /// <summary>
         /// Send message
         /// </summary>
         /// <param name="content">content</param>
         /// <param name="chatId">chat id</param>
         /// <returns></returns>
-        public async Task<SendMessageResponse> SendMessage(string chatId, string content)
+        public async Task<SendMessageResponse> Query(string chatId, string content)
         {
-            chatId = await CreateChatIdIfBlank(chatId);
-            var result = await CreateChatCompletion(chatId, content);
+            chatId = ChatIdCleaned(chatId);
+            chatId = await CreateIfBlankChatId(chatId);
+            var result = await RetellCreateChatCompletion(chatId, content);
             if (result != null)
             {
                 return new SendMessageResponse
@@ -117,8 +124,8 @@ namespace RetellApi
                     messages = result.messages
                 };
             }
-            chatId = await CreateChatIdIfBlank(chatId); // chat id was passed but not found, just create another.
-            result = await CreateChatCompletion(content, chatId);
+            chatId = await CreateIfBlankChatId(chatId); // chat id was passed but not found, just create another.
+            result = await RetellCreateChatCompletion(content, chatId);
             return new SendMessageResponse
             {
                 chatId = chatId,
@@ -132,7 +139,7 @@ namespace RetellApi
         /// <param name="chatId"></param>
         /// <param name="content"></param>
         /// <returns></returns>
-        private async Task<CreateChatCompletionResponse> CreateChatCompletion(string chatId, string content)
+        private async Task<CreateChatCompletionResponse> RetellCreateChatCompletion(string chatId, string content)
         {
             var payload = new CreateChatCompletionRequest
             {
@@ -166,16 +173,16 @@ namespace RetellApi
                 //Console.WriteLine($"Error detail: {error?.Message}");
                 return null;
             }
-
         }
         /// <summary>
-        /// Get chat details
+        /// Lookup chat - will throw if not found (404 error, and model not parsed)
         /// </summary>
         /// <returns></returns>
-        public async Task<GetChatResponse> GetChatDetailById(string chatId)
+        public async Task<ChatLookupResponse> Lookup(string chatId)
         {
+            chatId = ChatIdCleaned(chatId);
             var response = await BaseRequest($"get-chat/{chatId}")
-                .GetJsonAsync<GetChatResponse>();
+                .GetJsonAsync<ChatLookupResponse>();
             return response;
         }
     }
