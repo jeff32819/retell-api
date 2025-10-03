@@ -180,10 +180,43 @@ namespace RetellApi
         /// <returns></returns>
         public async Task<ChatLookupResponse> Lookup(string chatId)
         {
-            chatId = ChatIdCleaned(chatId);
-            var response = await BaseRequest($"get-chat/{chatId}")
-                .GetJsonAsync<ChatLookupResponse>();
-            return response;
+            Console.WriteLine($"Lookup :: chatId = {chatId}");
+            try
+            {
+                chatId = ChatIdCleaned(chatId);
+                var response = await BaseRequest($"get-chat/{chatId}").GetJsonAsync<ChatLookupResponse>();
+                return response;
+
+            }
+            catch (FlurlParsingException ex)
+            {
+                // Check if there's a response
+                if (ex.Call.Response != null)
+                {
+                    var errorContent = await ex.GetResponseStringAsync();
+                    Console.WriteLine("Error response: " + errorContent);
+                }
+                else
+                {
+                    Console.WriteLine("No response received. Exception: " + ex.Message);
+                }
+                throw;
+
+            }
+            catch (FlurlHttpException ex)
+            {
+                // Check if there's a response
+                if (ex.Call.Response != null)
+                {
+                    var errorContent = await ex.GetResponseStringAsync();
+                    Console.WriteLine("Error response: " + errorContent);
+                }
+                else
+                {
+                    Console.WriteLine("No response received. Exception: " + ex.Message);
+                }
+                throw;
+            }
         }
     }
 }

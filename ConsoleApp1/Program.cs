@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using RetellApi;
+﻿using ConsoleApp1;
+
+using Microsoft.Extensions.Configuration;
 // Add this using directive
-using Formatting = Newtonsoft.Json.Formatting;
 
 
 var config = new ConfigurationBuilder()
@@ -15,24 +14,11 @@ if (string.IsNullOrEmpty(apiKey))
     throw new Exception("apiKey not set");
 }
 
-var service = new ChatService(apiKey, "agent_cf8e9c51ac5ece9754fbe6ef4e");
+var tests = new Tests(apiKey);
 
-const string previousChatId = ""; // "chat_4cb44d97b121efa77f01b097cca";
-
-var sendMessage = await service.Query(previousChatId, "what is your business name");
-if (sendMessage == null)
-{
-    throw new Exception("result was null");
-}
-File.WriteAllText("t:\\retell.txt", JsonConvert.SerializeObject(sendMessage, (Formatting)System.Xml.Formatting.Indented));
-
-
-//var chatDetails = await service.Lookup(previousChatId);
-//File.WriteAllText("t:\\retell_chatDetails.txt", JsonConvert.SerializeObject(chatDetails, (Formatting)System.Xml.Formatting.Indented));
-//foreach (var item in chatDetails.message_with_tool_calls)
-//{
-//    Console.WriteLine($"{item.role} :: {item.content}");
-//}
+const string previousChatId = "chat_de8fcd4fb21a3f620cec52adad4"; 
+//var sendMessage = await tests.Query(previousChatId, "what is your business name");
+var result = await tests.Lookup(previousChatId);
 
 Console.WriteLine();
 Console.WriteLine("Press any key to exit.");

@@ -20,8 +20,8 @@ namespace RetellApi.Models
 
         public class ChatCost
         {
-            public int combined_cost { get; set; }
-            public List<object> product_costs { get; set; }
+            public double combined_cost { get; set; }
+            public List<ProductCost> product_costs { get; set; }
         }
 
         public class CollectedDynamicVariables
@@ -34,6 +34,16 @@ namespace RetellApi.Models
             public string role { get; set; }
             public object created_timestamp { get; set; }
             public string content { get; set; }
+            public string tool_call_id { get; set; }
+            public string name { get; set; }
+            public string arguments { get; set; }
+        }
+
+        public class ProductCost
+        {
+            public double unit_price { get; set; }
+            public string product { get; set; }
+            public double cost { get; set; }
         }
     }
 }
